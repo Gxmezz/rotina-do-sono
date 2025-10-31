@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Questionário: Rotina de Sono</title>
+<style>
+  :root{--bg1:#050816;--bg2:#081230;--bg3:#0b1a2b;--card:rgba(255,255,255,0.03);--accent1:#6b5fb3;--accent2:#2b2b7a}
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:#e6eef8;background:linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));-webkit-font-smoothing:antialiased}
+  .container{max-width:980px;margin:32px auto;padding:22px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:16px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  header{display:flex;gap:16px;align-items:center}
+  .logo{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent1));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.6)}
+  h1{margin:0;font-size:20px}
+  p.lead{margin:2px 0 0;color:#9fb0d6;font-size:13px}
+  ol{counter-reset:q;list-style:none;padding:0;margin:18px 0}
+  li{background:transparent;padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.02)}
+  .qhead{display:flex;justify-content:space-between;align-items:flex-start}
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  button.opt{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:10px;text-align:left;color:#dceeff;cursor:pointer}
+  button.opt.selected{box-shadow:0 8px 20px rgba(107,95,179,0.18);transform:scale(1.02);background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#041427}
+  .controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;flex-wrap:wrap}
+  .controls .right{display:flex;gap:8px}
+  .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;color:#d6e6fb;border:1px solid rgba(255,255,255,0.03)}
+  .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white}
+  .result{margin-top:18px;padding:16px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border:1px solid rgba(255,255,255,0.03)}
+  footer{margin-top:12px;text-align:center;color:#8fa7d0;font-size:12px}
+  @media(max-width:720px){.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo" aria-hidden>
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="white" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/></svg>
+    </div>
+    <div>
+      <h1>Questionário: Rotina de Sono</h1>
+      <p class="lead">Responda as 10 perguntas e veja seu grupo de rotina de sono.</p>
+    </div>
+  </header>
+
+  <main>
+    <form id="quiz">
+      <ol id="questions"></ol>
+
+      <div class="controls">
+        <div class="status">Respondidas <strong id="answered">0</strong> / 10</div>
+        <div class="right">
+          <button type="button" class="btn ghost" id="reset">Reiniciar</button>
+          <button type="submit" class="btn primary" id="submit" disabled>Ver Resultado</button>
+        </div>
+      </div>
+    </form>
+
+    <section id="out" class="result" style="display:none"></section>
+  </main>
+
+  <footer>Desenvolvido para avaliar hábitos de sono — código aberto e adaptável.</footer>
+</div>
+
+<script>
+const questions = [
+  { id:1, text:"Consumo de Estimulantes (Cafeína/Nicotina): Quanto tempo passa entre sua última bebida com cafeína ou uso de nicotina e o momento em que vai para a cama?", options:[{k:'A',l:'Menos de 4 horas',p:1},{k:'B',l:'Entre 4 e 6 horas',p:2},{k:'C',l:'Mais de 6 horas, ou não consumo esses estimulantes',p:3}]},
+  { id:2, text:"Rotina de Relaxamento Pré-Sono: Quanto tempo você dedica a uma atividade relaxante antes de dormir?", options:[{k:'A',l:'Nunca ou menos de 15 minutos',p:1},{k:'B',l:'Entre 15 e 30 minutos',p:2},{k:'C',l:'Mais de 30 minutos, como uma rotina estabelecida',p:3}]},
+  { id:3, text:"Consistência Horária (Fim de Semana): Qual é a diferença entre seu horário de despertar durante a semana e nos fins de semana?", options:[{k:'A',l:"2 horas ou mais (tento 'recuperar' o sono)",p:1},{k:'B',l:'Entre 1 e 2 horas',p:2},{k:'C',l:'Menos de 1 hora de diferença',p:3}]},
+  { id:4, text:"Uso de Telas/Dispositivos: Quanto tempo antes de apagar a luz você para de usar dispositivos eletrônicos?", options:[{k:'A',l:'Menos de 15 minutos antes',p:1},{k:'B',l:'Entre 15 e 45 minutos antes',p:2},{k:'C',l:'Mais de 1 hora antes',p:3}]},
+  { id:5, text:"Uso da Cama: Com que frequência você usa sua cama para atividades que exigem atenção ou causam estresse?", options:[{k:'A',l:'Muito frequentemente (quase todos os dias)',p:1},{k:'B',l:'Ocasionalmente (1-2 vezes por semana)',p:2},{k:'C',l:'Nunca ou quase nunca',p:3}]},
+  { id:6, text:"Ingestão Noturna (Comida/Álcool): Com que frequência você consome refeições pesadas, picantes ou álcool nas 3 horas antes de dormir?", options:[{k:'A',l:'Quase todos os dias',p:1},{k:'B',l:'Ocasionalmente (1-2 vezes por semana)',p:2},{k:'C',l:'Raramente ou nunca',p:3}]},
+  { id:7, text:"Horário de Exercício Intenso: Que horas você costuma fazer seu exercício físico mais vigoroso do dia?", options:[{k:'A',l:'Nas 3 horas antes de dormir',p:1},{k:'B',l:'Entre 3 e 5 horas antes de dormir',p:2},{k:'C',l:'Mais de 5 horas antes, ou de manhã/tarde',p:3}]},
+  { id:8, text:"Ambiente do Quarto: Seu quarto se mantém escuro, silencioso e fresco durante toda a noite?", options:[{k:'A',l:'Não, costuma ter luz, barulho ou está muito quente/frio',p:1},{k:'B',l:'Sim, é razoavelmente confortável, mas às vezes há interrupções',p:2},{k:'C',l:'Sim, é constantemente escuro, silencioso e fresco',p:3}]},
+  { id:9, text:"Manejo da Insônia Noturna: Se você não consegue dormir, o que faz?", options:[{k:'A',l:'Fico na cama frustrado(a), olhando o relógio ou o celular',p:1},{k:'B',l:'Levanto-me por um momento para alongar ou beber água, mas volto rapidamente à cama',p:2},{k:'C',l:'Levanto-me e faço uma atividade tranquila até sentir sono',p:3}]},
+  { id:10, text:"Sonecas Diárias: Com que frequência você tira sonecas durante o dia?", options:[{k:'A',l:'Quase todos os dias, e geralmente duram mais de 30 minutos',p:1},{k:'B',l:'Ocasionalmente, duram menos de 30 minutos e antes das 15h',p:2},{k:'C',l:'Nunca ou quase nunca',p:3}]}
+];
+
+const questionsEl = document.getElementById('questions');
+const answeredEl = document.getElementById('answered');
+const out = document.getElementById('out');
+const submitBtn = document.getElementById('submit');
+
+let answers = {};
+
+function render() {
+  questionsEl.innerHTML = '';
+  questions.forEach((q, idx) => {
+    const li = document.createElement('li');
+    const header = document.createElement('div');
+    header.className = 'qhead';
+    header.innerHTML = `<div><strong>${q.id}. </strong>${q.text}</div><div style="color:#9fb0d6;font-size:12px">Pergunta ${q.id}/10</div>`;
+    li.appendChild(header);
+    const opts = document.createElement('div');
+    opts.className = 'opts';
+    q.options.forEach(opt => {
+      const b = document.createElement('button');
+      b.type='button';
+      b.className='opt';
+      b.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center">${opt.k}</div><div><div style="font-weight:600">${opt.l}</div><div style="font-size:12px;color:#9fb0d6">Pontos: ${opt.p}</div></div></div>`;
+      b.onclick = () => {
+        answers[q.id] = opt;
+        updateUI();
+      };
+      opts.appendChild(b);
+    });
+    li.appendChild(opts);
+    questionsEl.appendChild(li);
+  });
+  updateUI();
+}
+
+function updateUI() {
+  // mark selected
+  document.querySelectorAll('.opts').forEach((optGroup, idx) => {
+    const q = questions[idx];
+    Array.from(optGroup.children).forEach((btn, i) => {
+      const opt = q.options[i];
+      if (answers[q.id] && answers[q.id].k === opt.k) btn.classList.add('selected'); else btn.classList.remove('selected');
+    });
+  });
+  answeredEl.textContent = Object.keys(answers).length;
+  submitBtn.disabled = Object.keys(answers).length < 10;
+}
+
+function scoreTotal() {
+  return Object.values(answers).reduce((s,a)=>s+(a? a.p:0),0);
+}
+
+function resultFor(score) {
+  if (score >= 24) return {title:'Rotina Otimizada', color:'green', desc:'Você segue práticas favoráveis ao descanso. Ótimo trabalho!'};
+  if (score >= 17) return {title:'Rotina Moderada', color:'amber', desc:'Você tem uma boa base; pequenos ajustes podem melhorar seu sono.'};
+  return {title:'Rotina Irregular', color:'rose', desc:'Seus hábitos podem estar atrapalhando o descanso. Revise as respostas marcadas com A.'};
+}
+
+document.getElementById('reset').onclick = () => { answers={}; render(); out.style.display='none'; window.scrollTo({top:0,behavior:'smooth'}); };
+document.getElementById('quiz').onsubmit = (e) => {
+  e.preventDefault();
+  const score = scoreTotal();
+  const r = resultFor(score);
+  out.style.display='block';
+  out.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><h3 style="margin:0">${r.title}</h3><div style="color:#9fb0d6;margin-top:6px">Pontuação total: <strong style="color:#fff">${score}</strong> (faixa 10 - 30)</div></div><div><span style="display:inline-block;padding:6px 10px;border-radius:999px;background:${r.color==='green'? '#d1fae5': r.color==='amber'?'#fff4d6':'#ffe4e6'};color:${r.color==='green'?'#065f46': r.color==='amber'? '#92400e':'#831843'};font-weight:600">${r.title}</span></div></div>
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><h4 style="margin:0">Interpretação</h4><p style="margin:0;color:#cfe0ff">${r.desc}</p>
+  <div style="margin-top:10px"><strong>Dicas:</strong><ul style="margin:8px 0 0 18px;color:#cfe0ff"><li>Evite cafeína e nicotina pelo menos 4–6 horas antes de dormir.</li><li>Crie rotina de relaxamento de 20–30 minutos antes de deitar.</li><li>Evite telas pelo menos 1 hora antes de dormir.</li></ul></div></div>
+  <div><h4 style="margin:0 0 8px 0">Faixas</h4><div style="color:#cfe0ff"><p><strong>10 - 16 (Rotina Irregular):</strong> Reveja perguntas com 'A'.</p><p><strong>17 - 23 (Rotina Moderada):</strong> Consolide hábitos 'B' para 'C'.</p><p><strong>24 - 30 (Rotina Otimizada):</strong> Continue assim.</p></div></div></div>`;
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+};
+
+render();
+</script>
+</body>
+</html>
